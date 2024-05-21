@@ -79,6 +79,12 @@ def test_flask_extension_default(tmp_path, flask_input_yaml):
                 "python-requirements": ["requirements.txt"],
                 "source": ".",
                 "stage-packages": ["python3-venv"],
+                "override-build": textwrap.dedent(
+                    """\
+                    rm -f pyproject.toml
+                    craftctl default
+                    """
+                ),
             },
             "flask-framework/install-app": {
                 "organize": {
@@ -277,6 +283,12 @@ def test_flask_extension_override_parts(tmp_path, flask_input_yaml):
         "python-requirements": ["requirements.txt", "requirements-jammy.txt"],
         "source": ".",
         "stage-packages": ["python3-venv"],
+        "override-build": textwrap.dedent(
+            """\
+            rm -f pyproject.toml
+            craftctl default
+            """
+        ),
     }
 
 
@@ -400,6 +412,12 @@ def test_django_extension_default(tmp_path, django_input_yaml):
                 "python-requirements": ["requirements.txt"],
                 "source": ".",
                 "stage-packages": ["python3-venv"],
+                "override-build": textwrap.dedent(
+                    """\
+                    rm -f pyproject.toml
+                    craftctl default
+                    """
+                ),
             },
             "django-framework/install-app": {
                 "organize": {"*": "django/app/", ".*": "django/app/"},

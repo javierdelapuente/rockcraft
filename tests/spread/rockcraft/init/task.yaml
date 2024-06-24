@@ -1,14 +1,15 @@
 summary: rockcraft init test
 
 execute: |
-  run_rockcraft init --name=my-rock-name 2> output.txt
+  run_rockcraft init --name=my-rock-name > output.txt
 
   # Output of init must be exactly this line, and nothing else.  
-  echo "Created rockcraft.yaml." > expected.txt
+  echo "Created 'rockcraft.yaml'." > expected.txt
   diff output.txt expected.txt
   
   test -f rockcraft.yaml
-  run_rockcraft pack
+  run_rockcraft pack 2> pack_output.txt
+  NOMATCH "deleting current features configuration" pack_output.txt
 
   test -f my-rock-name_0.1_amd64.rock
   test ! -d parts -a ! -d stage -a ! -d prime

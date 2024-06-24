@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Creation of minimalist rockcraft projects."""
+
+from dataclasses import dataclass
 import pathlib
 import re
 import textwrap
@@ -32,7 +34,7 @@ if TYPE_CHECKING:
     import argparse
 
 
-def init(rockcraft_yaml_content: str) -> None:
+def init(rockcraft_yaml_content: str) -> Path:
     """Initialize a rockcraft project.
 
     :param rockcraft_yaml_content: Content of the rockcraft.yaml file
@@ -49,15 +51,22 @@ def init(rockcraft_yaml_content: str) -> None:
 
     rockcraft_yaml_path.write_text(rockcraft_yaml_content)
 
-    emit.progress(f"Created {rockcraft_yaml_path}.")
+    return rockcraft_yaml_path
+
+
+@dataclass
+class _InitProfile:
+    rockcraft_yaml: str
+    doc_slug: str | None = None
 
 
 class InitCommand(AppCommand):
     """Initialize a rockcraft project."""
 
-    _INIT_TEMPLATES = {
-        "simple": textwrap.dedent(
-            """\
+    _PROFILES = {
+        "simple": _InitProfile(
+            rockcraft_yaml=textwrap.dedent(
+                """\
                 name: {name}
                 # see https://documentation.ubuntu.com/rockcraft/en/stable/explanation/bases/
                 # for more information about bases and using 'bare' bases for chiselled rocks
@@ -76,9 +85,11 @@ class InitCommand(AppCommand):
                     my-part:
                         plugin: nil
                 """
+            )
         ),
-        "flask-framework": textwrap.dedent(
-            """\
+        "flask-framework": _InitProfile(
+            rockcraft_yaml=textwrap.dedent(
+                """\
                 name: {name}
                 # see https://documentation.ubuntu.com/rockcraft/en/stable/explanation/bases/
                 # for more information about bases and using 'bare' bases for chiselled rocks
@@ -144,9 +155,12 @@ class InitCommand(AppCommand):
                 #     # list required Debian packages for your flask application below.
                 #     - libpq5
                 """
+            ),
+            doc_slug="/reference/extensions/flask-framework",
         ),
-        "django-framework": textwrap.dedent(
-            """\
+        "django-framework": _InitProfile(
+            rockcraft_yaml=textwrap.dedent(
+                """\
                 name: {name}
                 # see https://documentation.ubuntu.com/rockcraft/en/stable/explanation/bases/
                 # for more information about bases and using 'bare' bases for chiselled rocks
@@ -186,6 +200,7 @@ class InitCommand(AppCommand):
                 #       # list required packages or slices for your Django application below.
                 #       - libpq-dev
             """
+            )
         ),
     }
     _DEFAULT_PROFILE = "simple"
@@ -206,7 +221,7 @@ class InitCommand(AppCommand):
         )
         parser.add_argument(
             "--profile",
-            choices=list(self._INIT_TEMPLATES),
+            choices=list(self._PROFILES),
             default=self._DEFAULT_PROFILE,
             help=f"Use the specified project profile (defaults to '{self._DEFAULT_PROFILE}')",
         )
@@ -226,6 +241,27 @@ class InitCommand(AppCommand):
                 name = "my-rock-name"
             emit.debug(f"Set project name to '{name}'")
 
-        context = {"name": name, "snake_name": name.replace("-", "_").lower()}
+        # Get the init profile
+        init_profile = self._PROFILES[parsed_args.profile]
 
-        init(self._INIT_TEMPLATES[parsed_args.profile].format(**context))
+        # Setup the reference documentation link if available
+        profile_reference_docs: str | None = None
+        if self._app.docs_url and init_profile.doc_slug:
+            profile_reference_docs = self._app.docs_url + init_profile.doc_slug
+
+        # Format the template, all templates should be tested to avoid risk of
+        # expecting documentation when there isn't any set
+        context = {
+            "name": name,
+            "snake_name": name.replace("-", "_").lower(),
+            "profile_reference_docs": profile_reference_docs,
+        }
+        rockcraft_yaml_path = init(init_profile.rockcraft_yaml.format(**context))
+
+        message = f"Created {str(rockcraft_yaml_path)!r}."
+        if profile_reference_docs:
+            message += (
+                f"\nGo to {profile_reference_docs} to read more about the "
+                f"{parsed_args.profile!r} profile."
+            )
+        emit.message(message)

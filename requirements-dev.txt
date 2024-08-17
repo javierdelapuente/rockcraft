@@ -67,7 +67,7 @@ lxml==5.2.2
 Markdown==3.6
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
-mccabe==0.6.1
+mccabe==0.7.0
 mdit-py-plugins==0.4.1
 mdurl==0.1.2
 more-itertools==10.4.0

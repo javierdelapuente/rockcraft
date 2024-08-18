@@ -25,7 +25,7 @@ pycparser==2.22
 pydantic==2.8.2
 pydantic_core==2.20.1
 pydantic_yaml==1.3.0
-pygit2==1.14.1
+pygit2==1.15.1
 pyparsing==3.1.2
 pyxdg==0.28
 PyYAML==6.0.2

@@ -13,7 +13,7 @@ black==24.8.0
 boolean.py==4.0
 bracex==2.5
 CacheControl==0.14.0
-cachetools==5.4.0
+cachetools==5.5.0
 canonical-sphinx==0.1.0
 canonical-sphinx-extensions==0.0.23
 certifi==2024.7.4
